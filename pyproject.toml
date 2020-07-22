@@ -1,0 +1,78 @@
+[tool.poetry]
+name = "flask-mod-auth-gssapi"
+version = "0.1.0"
+description = "A Flask extention to make use of the authentication provided by the mod_auth_gssapi extention of Apache's HTTPd."
+
+license = "MIT"
+
+authors = [
+  "Fedora Infrastructure <admin@fedoraproject.org>"
+]
+
+readme = "README.md"
+keywords = ["security", "web"]
+repository = "https://github.com/fedora-infra/flask-mod-auth-gssapi"
+homepage = "https://github.com/fedora-infra/flask-mod-auth-gssapi"
+
+include = [
+    "tox.ini",
+    "config/*",
+    "docs/*/*",
+    "tests/*",
+]
+
+classifiers = [
+    "Environment :: Web Environment",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Topic :: Internet :: WWW/HTTP :: Dynamic Content",
+    "Topic :: Software Development :: Libraries :: Python Modules"
+]
+
+[tool.poetry.dependencies]
+python = "^3.6"
+flask = "^1.1"
+gssapi = "^1.6.2"
+
+[tool.poetry.dev-dependencies]
+pytest = "^5.2"
+pytest-cov = "^2.8"
+pytest-mock = "^3.0.0"
+bandit = "^1.6"
+black = "^19.10b0"
+flake8 = "^3.7.9"
+flake8-import-order = "^0.18.1"
+isort = "^5.1.4"
+coverage = {extras = ["toml"], version = "^5.2"}
+
+[tool.isort]
+profile = "black"
+
+[tool.pytest.ini_options]
+testpaths = [
+    "tests",
+]
+
+[tool.coverage.run]
+branch = true
+source = ["flask_mod_auth_gssapi"]
+
+[tool.coverage.paths]
+source = ["flask_mod_auth_gssapi"]
+
+[tool.coverage.report]
+fail_under = 100
+exclude_lines = [
+    "pragma: no cover",
+    "if __name__ == .__main__.:",
+]
+omit = [
+    "flask_mod_auth_gssapi/__init__.py"
+]
+
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"
