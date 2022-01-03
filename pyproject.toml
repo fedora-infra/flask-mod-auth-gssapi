@@ -32,23 +32,24 @@ classifiers = [
 ]
 
 [tool.poetry.dependencies]
-python = "^3.6"
-flask = "^1.1"
+python = "^3.6.2"
+flask = "<3.0.0"
 gssapi = "^1.6.2"
 
 [tool.poetry.dev-dependencies]
-pytest = "^5.2"
-pytest-cov = "^2.8"
-pytest-mock = "^3.0.0"
+flake8 = "^4.0.1"
+pytest = "^6.2.5"
+pytest-mock = "^3.6.1"
+pytest-cov = "^3.0.0"
 bandit = "^1.6"
-black = "^19.10b0"
-flake8 = "^3.7.9"
-flake8-import-order = "^0.18.1"
-isort = "^5.1.4"
-coverage = {extras = ["toml"], version = "^5.2"}
+black = {version = "^21.12b0", allow-prereleases = true}
+isort = "^5.10.1"
+coverage = {extras = ["toml"], version = "^6.2"}
 
 [tool.isort]
 profile = "black"
+lines_after_imports = 2
+force_alphabetical_sort_within_sections = true
 
 [tool.pytest.ini_options]
 testpaths = [
@@ -74,5 +75,5 @@ omit = [
 
 
 [build-system]
-requires = ["poetry>=0.12"]
+requires = ["poetry>=1.1.4"]
 build-backend = "poetry.masonry.api"

@@ -5,7 +5,7 @@ from flask import abort, g, request
 
 
 class FlaskModAuthGSSAPI:
-    def __init__(self, app, abort=abort):
+    def __init__(self, app=None, abort=abort):
         self.abort = abort
         if app is not None:
             self.init_app(app)
@@ -19,7 +19,8 @@ class FlaskModAuthGSSAPI:
         wsgi_env = request.environ
         if wsgi_env["wsgi.multithread"]:
             self.abort(
-                500, "GSSAPI is not compatible with multi-threaded WSGI servers.",
+                500,
+                "GSSAPI is not compatible with multi-threaded WSGI servers.",
             )
 
         ccache = wsgi_env.get("KRB5CCNAME")
@@ -40,7 +41,8 @@ class FlaskModAuthGSSAPI:
             )
         except gssapi.exceptions.GSSError as e:
             self.abort(
-                403, f"Invalid credentials ({e})",
+                403,
+                f"Invalid credentials ({e})",
             )
         if creds.lifetime <= 0:
             self.abort(401, "Credential lifetime has expired")
