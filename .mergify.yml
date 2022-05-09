@@ -15,8 +15,7 @@ pull_request_rules:
     actions:
       merge:
         method: rebase
-        rebase_fallback: null
-        strict: true
+        rebase_fallback: none
     conditions:
     - label!=WIP
     - approved-reviews-by=@fedora-infra/authdev
@@ -35,8 +34,7 @@ pull_request_rules:
     actions:
       merge:
         method: rebase
-        rebase_fallback: null
-        strict: true
+        rebase_fallback: none
     conditions:
     - label!=WIP
     - author=dependabot[bot]
