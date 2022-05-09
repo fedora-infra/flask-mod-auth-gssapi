@@ -23,7 +23,6 @@ pull_request_rules:
     - status-success=DCO
     - status-success=Misc tests (lint)
     - status-success=Misc tests (format)
-    - status-success=Misc tests (licenses)
     - status-success=Misc tests (security)
     - status-success=Unit tests (py36-unittest)
     - status-success=Unit tests (py37-unittest)
@@ -42,7 +41,6 @@ pull_request_rules:
     - status-success=DCO
     - status-success=Misc tests (lint)
     - status-success=Misc tests (format)
-    - status-success=Misc tests (licenses)
     - status-success=Misc tests (security)
     - status-success=Unit tests (py36-unittest)
     - status-success=Unit tests (py37-unittest)
