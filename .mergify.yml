@@ -5,17 +5,18 @@ queue_rules:
       - status-success=Misc tests (lint)
       - status-success=Misc tests (format)
       - status-success=Misc tests (security)
-      - status-success=Unit tests (py36-unittest)
-      - status-success=Unit tests (py37-unittest)
       - status-success=Unit tests (py38-unittest)
       - status-success=Unit tests (py39-unittest)
+      - status-success=Unit tests (py310-unittest)
+      - status-success=Unit tests (py311-unittest)
 
 pull_request_rules:
-  - name: Automatic merge on approval
+
+  - name: Merge on approval
     actions:
-      merge:
+      queue:
+        name: default
         method: rebase
-        rebase_fallback: none
     conditions:
     - label!=WIP
     - approved-reviews-by=@fedora-infra/authdev
@@ -24,16 +25,16 @@ pull_request_rules:
     - status-success=Misc tests (lint)
     - status-success=Misc tests (format)
     - status-success=Misc tests (security)
-    - status-success=Unit tests (py36-unittest)
-    - status-success=Unit tests (py37-unittest)
     - status-success=Unit tests (py38-unittest)
     - status-success=Unit tests (py39-unittest)
+    - status-success=Unit tests (py310-unittest)
+    - status-success=Unit tests (py311-unittest)
 
-  - name: Automatic merge Dependabot PRs
+  - name: Merge Dependabot PRs
     actions:
-      merge:
+      queue:
+        name: default
         method: rebase
-        rebase_fallback: none
     conditions:
     - label!=WIP
     - author=dependabot[bot]
@@ -42,8 +43,7 @@ pull_request_rules:
     - status-success=Misc tests (lint)
     - status-success=Misc tests (format)
     - status-success=Misc tests (security)
-    - status-success=Unit tests (py36-unittest)
-    - status-success=Unit tests (py37-unittest)
     - status-success=Unit tests (py38-unittest)
     - status-success=Unit tests (py39-unittest)
-
+    - status-success=Unit tests (py310-unittest)
+    - status-success=Unit tests (py311-unittest)

@@ -40,8 +40,8 @@ jobs:
     strategy:
       matrix:
         tox_env:
-          - py36-unittest
-          - py37-unittest
           - py38-unittest
           - py39-unittest
+          - py310-unittest
+          - py311-unittest
     runs-on: ubuntu-latest
