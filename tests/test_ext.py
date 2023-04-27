@@ -2,6 +2,7 @@ from types import SimpleNamespace
 
 import pytest
 from flask import Flask, g
+from gssapi.raw.exceptions import ExpiredCredentialsError
 from werkzeug.exceptions import Forbidden, InternalServerError, Unauthorized
 
 from flask_mod_auth_gssapi import FlaskModAuthGSSAPI
@@ -49,6 +50,26 @@ def test_expired(app, wsgi_env, mocker):
     with app.test_request_context("/", environ_base=wsgi_env):
         with pytest.raises(Unauthorized) as excinfo:
             app.preprocess_request()
+            assert g.principal is None
+            assert g.username is None
+    assert excinfo.value.description == "Credential lifetime has expired"
+
+
+def test_expired_exception(app, wsgi_env, mocker):
+    creds_factory = mocker.patch("gssapi.Credentials")
+
+    class MockedCred:
+        @property
+        def lifetime(self):
+            raise ExpiredCredentialsError(720896, 100001)
+
+    creds_factory.return_value = MockedCred()
+    with app.test_request_context("/", environ_base=wsgi_env):
+        with pytest.raises(Unauthorized) as excinfo:
+            try:
+                app.preprocess_request()
+            except ExpiredCredentialsError:
+                pytest.fail("Did not catch ExpiredCredentialsError on cred.lifetime")
             assert g.principal is None
             assert g.username is None
     assert excinfo.value.description == "Credential lifetime has expired"

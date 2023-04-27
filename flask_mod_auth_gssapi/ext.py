@@ -44,7 +44,11 @@ class FlaskModAuthGSSAPI:
                 403,
                 f"Invalid credentials ({e})",
             )
-        if creds.lifetime <= 0:
+        try:
+            lifetime = creds.lifetime
+        except gssapi.exceptions.ExpiredCredentialsError:
+            lifetime = 0
+        if lifetime <= 0:
             self.abort(401, "Credential lifetime has expired")
 
         g.gss_name = gss_name
