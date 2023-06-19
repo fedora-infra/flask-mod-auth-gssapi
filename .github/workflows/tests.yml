@@ -25,7 +25,6 @@ jobs:
         tox_env:
           - lint
           - format
-          - security
     runs-on: ubuntu-latest
 
   unit_test:

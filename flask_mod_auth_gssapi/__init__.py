@@ -1,6 +1,5 @@
 from .ext import FlaskModAuthGSSAPI  # noqa: F401
 
-
 # Set the version
 try:
     import importlib.metadata

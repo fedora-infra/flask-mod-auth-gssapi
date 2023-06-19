@@ -14,4 +14,4 @@ def app():
 
 @pytest.fixture
 def wsgi_env():
-    return {"KRB5CCNAME": "/tmp/ignore", "GSS_NAME": "dummy@EXAMPLE.TEST"}
+    return {"KRB5CCNAME": "/tmp/ignore", "GSS_NAME": "dummy@EXAMPLE.TEST"}  # noqa: S108
