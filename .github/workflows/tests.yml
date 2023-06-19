@@ -35,13 +35,16 @@ jobs:
       - name: Run tests
         uses: fedora-python/tox-github-action@master
         with:
-          tox_env: ${{ matrix.tox_env }}
+          tox_env: ${{ matrix.pyver }}-${{ matrix.flaskver }}
           dnf_install: krb5-devel openldap-devel
     strategy:
       matrix:
-        tox_env:
-          - py38-unittest
-          - py39-unittest
-          - py310-unittest
-          - py311-unittest
+        pyver:
+          - py38
+          - py39
+          - py310
+          - py311
+        flaskver:
+          - flask1
+          - flask2
     runs-on: ubuntu-latest
