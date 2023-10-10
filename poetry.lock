@@ -83,7 +83,7 @@ test = ["pytest (>=6)"]
 
 [[package]]
 name = "flask"
-version = "2.3.3"
+version = "3.0.0"
 description = "A simple framework for building complex web applications."
 category = "main"
 optional = false
@@ -95,7 +95,7 @@ click = ">=8.1.3"
 importlib-metadata = {version = ">=3.6.0", markers = "python_version < \"3.10\""}
 itsdangerous = ">=2.1.2"
 Jinja2 = ">=3.1.2"
-Werkzeug = ">=2.3.7"
+Werkzeug = ">=3.0.0"
 
 [package.extras]
 async = ["asgiref (>=3.2)"]
@@ -315,7 +315,7 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8.0"
-content-hash = "86df79ba6c90bac365f7ee57830d81b63b3d8568ecf66307683f8074a741d2ed"
+content-hash = "23b4a395d97137a45f122fa313cc0ca7abf70379355fa9d96878c9469284fefa"
 
 [metadata.files]
 black = [
@@ -417,8 +417,8 @@ exceptiongroup = [
     {file = "exceptiongroup-1.1.3.tar.gz", hash = "sha256:097acd85d473d75af5bb98e41b61ff7fe35efe6675e4f9370ec6ec5126d160e9"},
 ]
 flask = [
-    {file = "flask-2.3.3-py3-none-any.whl", hash = "sha256:f69fcd559dc907ed196ab9df0e48471709175e696d6e698dd4dbe940f96ce66b"},
-    {file = "flask-2.3.3.tar.gz", hash = "sha256:09c347a92aa7ff4a8e7f3206795f30d826654baf38b873d0744cd571ca609efc"},
+    {file = "flask-3.0.0-py3-none-any.whl", hash = "sha256:21128f47e4e3b9d597a3e8521a329bf56909b690fcc3fa3e477725aa81367638"},
+    {file = "flask-3.0.0.tar.gz", hash = "sha256:cfadcdb638b609361d29ec22360d6070a77d7463dcb3ab08d2c2f2f168845f58"},
 ]
 gssapi = [
     {file = "gssapi-1.8.3-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:4e4a83e9b275fe69b5d40be6d5479889866b80333a12c51a9243f2712d4f0554"},

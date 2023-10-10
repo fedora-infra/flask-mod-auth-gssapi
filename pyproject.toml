@@ -33,7 +33,7 @@ classifiers = [
 
 [tool.poetry.dependencies]
 python = "^3.8.0"
-flask = "<3.0.0"
+flask = "<3.0.1"
 gssapi = "^1.6.2"
 
 [tool.poetry.dev-dependencies]
