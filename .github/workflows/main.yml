@@ -1,35 +1,50 @@
 on:
   push:
+    branches:
+      - stable
+      - develop
   pull_request:
+    branches:
+      - stable
+      - develop
 
-name: Tests
+name: Tests & Build
 
 jobs:
   tests-misc:
     name: Misc tests
+    runs-on: ubuntu-latest
+    container: fedorapython/fedora-python-tox:latest
     steps:
       - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: |
+          dnf install -y krb5-devel openldap-devel
+          pip install poetry
+      - name: Install the project
+        run: poetry install
       - name: Run tests
-        uses: fedora-python/tox-github-action@main
-        with:
-          tox_env: ${{ matrix.tox_env }}
-          dnf_install: krb5-devel openldap-devel
+        run: tox -e ${{ matrix.tox_env }}
     strategy:
       matrix:
         tox_env:
           - lint
           - format
-    runs-on: ubuntu-latest
 
   tests-unit:
     name: Unit tests
+    runs-on: ubuntu-latest
+    container: fedorapython/fedora-python-tox:latest
     steps:
       - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: |
+          dnf install -y krb5-devel openldap-devel
+          pip install poetry
+      - name: Install the project
+        run: poetry install
       - name: Run tests
-        uses: fedora-python/tox-github-action@main
-        with:
-          tox_env: ${{ matrix.pyver }}-${{ matrix.flaskver }}
-          dnf_install: krb5-devel openldap-devel
+        run: tox -e ${{ matrix.pyver }}-${{ matrix.flaskver }}
     strategy:
       matrix:
         pyver:
@@ -41,7 +56,6 @@ jobs:
           - flask1
           - flask2
           - flask3
-    runs-on: ubuntu-latest
 
   # https://packaging.python.org/en/latest/guides/publishing-package-distribution-releases-using-github-actions-ci-cd-workflows/
   build:
