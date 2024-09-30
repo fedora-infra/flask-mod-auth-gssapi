@@ -1,7 +1,10 @@
+import logging
 import os
 
 import gssapi
-from flask import abort, g, request
+from flask import abort, current_app, g, redirect, request
+
+_log = logging.getLogger(__name__)
 
 
 class FlaskModAuthGSSAPI:
@@ -12,6 +15,7 @@ class FlaskModAuthGSSAPI:
 
     def init_app(self, app):
         app.before_request(self._gssapi_check)
+        app.config.setdefault("MOD_AUTH_GSSAPI_SESSION_HEADER", "X-Replace-Session")
 
     def _gssapi_check(self):
         g.gss_name = g.gss_creds = g.principal = g.username = None
@@ -34,6 +38,11 @@ class FlaskModAuthGSSAPI:
         if not principal:
             return  # Maybe the endpoint is not protected, stop here
 
+        ccache_type, _sep, ccache_location = ccache.partition(":")
+        if ccache_type == "FILE" and not os.path.exists(ccache_location):
+            _log.warning("Delegated credentials not found: %r", ccache_location)
+            return self._clear_session()
+
         gss_name = gssapi.Name(principal, gssapi.NameType.kerberos_principal)
         try:
             creds = gssapi.Credentials(
@@ -49,9 +58,20 @@ class FlaskModAuthGSSAPI:
         except gssapi.exceptions.ExpiredCredentialsError:
             lifetime = 0
         if lifetime <= 0:
-            self.abort(401, "Credential lifetime has expired")
+            _log.info("Credential lifetime has expired.")
+            return self._clear_session()
 
         g.gss_name = gss_name
         g.gss_creds = creds
         g.principal = gss_name.display_as(gssapi.NameType.kerberos_principal)
         g.username = g.principal.split("@")[0]
+
+    def _clear_session(self):
+        """Unset mod_auth_gssapi's session cookie and redirect to the same URL"""
+        if request.method in ("POST", "PUT", "DELETE"):
+            self.abort(
+                401, "Re-authentication is necessary, please try your request again."
+            )
+        response = redirect(request.url)
+        response.headers[current_app.config["MOD_AUTH_GSSAPI_SESSION_HEADER"]] = "MagBearerToken="
+        return response

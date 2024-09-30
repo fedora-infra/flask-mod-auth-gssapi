@@ -1,3 +1,4 @@
+import logging
 from types import SimpleNamespace
 
 import pytest
@@ -44,18 +45,29 @@ def test_no_cache(app, wsgi_env):
             assert g.username is None
 
 
-def test_expired(app, wsgi_env, mocker):
+def test_expired(app, wsgi_env, caplog, mocker):
     creds_factory = mocker.patch("gssapi.Credentials")
     creds_factory.return_value = SimpleNamespace(lifetime=0)
-    with app.test_request_context("/", environ_base=wsgi_env):
+    caplog.set_level(logging.INFO)
+    client = app.test_client()
+    response = client.get("/someplace", environ_base=wsgi_env)
+    assert response.status_code == 302
+    assert response.headers["location"] == "http://localhost/someplace"
+    assert caplog.messages == ["Credential lifetime has expired."]
+
+
+def test_expired_unsafe_method(app, wsgi_env, mocker):
+    creds_factory = mocker.patch("gssapi.Credentials")
+    creds_factory.return_value = SimpleNamespace(lifetime=0)
+    with app.test_request_context("/someplace", method="POST", environ_base=wsgi_env):
         with pytest.raises(Unauthorized) as excinfo:
             app.preprocess_request()
             assert g.principal is None
             assert g.username is None
-    assert excinfo.value.description == "Credential lifetime has expired"
+    assert excinfo.value.description == "Re-authentication is necessary, please try your request again."
 
 
-def test_expired_exception(app, wsgi_env, mocker):
+def test_expired_exception(app, wsgi_env, mocker, caplog):
     creds_factory = mocker.patch("gssapi.Credentials")
 
     class MockedCred:
@@ -64,15 +76,15 @@ def test_expired_exception(app, wsgi_env, mocker):
             raise ExpiredCredentialsError(720896, 100001)
 
     creds_factory.return_value = MockedCred()
-    with app.test_request_context("/", environ_base=wsgi_env):
-        with pytest.raises(Unauthorized) as excinfo:
-            try:
-                app.preprocess_request()
-            except ExpiredCredentialsError:
-                pytest.fail("Did not catch ExpiredCredentialsError on cred.lifetime")
-            assert g.principal is None
-            assert g.username is None
-    assert excinfo.value.description == "Credential lifetime has expired"
+    caplog.set_level(logging.INFO)
+    client = app.test_client()
+    try:
+        response = client.get("/someplace", environ_base=wsgi_env)
+    except ExpiredCredentialsError:
+        pytest.fail("Did not catch ExpiredCredentialsError on cred.lifetime")
+    assert response.status_code == 302
+    assert response.headers["location"] == "http://localhost/someplace"
+    assert caplog.messages == ["Credential lifetime has expired."]
 
 
 def test_nominal(app, wsgi_env, mocker):
@@ -100,3 +112,13 @@ def test_alt_abort(app, wsgi_env, mocker):
     call_args = mock_abort.call_args_list[0][0]
     assert call_args[0] == 403
     assert call_args[1].startswith("Invalid credentials ")
+
+
+def test_ccache_not_found(app, wsgi_env, caplog, mocker):
+    wsgi_env["KRB5CCNAME"] = "FILE:/tmp/does-not-exist"
+    #caplog.set_level(logging.INFO)
+    client = app.test_client()
+    response = client.get("/someplace", environ_base=wsgi_env)
+    assert response.status_code == 302
+    assert response.headers["location"] == "http://localhost/someplace"
+    assert caplog.messages == ["Delegated credentials not found: '/tmp/does-not-exist'"]
