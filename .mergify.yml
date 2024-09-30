@@ -8,10 +8,12 @@ queue_rules:
       - status-success=Unit tests (py39-flask1)
       - status-success=Unit tests (py310-flask1)
       - status-success=Unit tests (py311-flask1)
+      - status-success=Unit tests (py312-flask1)
       - status-success=Unit tests (py38-flask2)
       - status-success=Unit tests (py39-flask2)
       - status-success=Unit tests (py310-flask2)
       - status-success=Unit tests (py311-flask2)
+      - status-success=Unit tests (py312-flask2)
 
 pull_request_rules:
 
@@ -31,7 +33,9 @@ pull_request_rules:
     - status-success=Unit tests (py39-flask1)
     - status-success=Unit tests (py310-flask1)
     - status-success=Unit tests (py311-flask1)
+    - status-success=Unit tests (py312-flask1)
     - status-success=Unit tests (py38-flask2)
     - status-success=Unit tests (py39-flask2)
     - status-success=Unit tests (py310-flask2)
     - status-success=Unit tests (py311-flask2)
+    - status-success=Unit tests (py312-flask2)
