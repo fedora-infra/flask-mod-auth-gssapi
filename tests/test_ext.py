@@ -64,7 +64,10 @@ def test_expired_unsafe_method(app, wsgi_env, mocker):
             app.preprocess_request()
             assert g.principal is None
             assert g.username is None
-    assert excinfo.value.description == "Re-authentication is necessary, please try your request again."
+    assert (
+        excinfo.value.description
+        == "Re-authentication is necessary, please try your request again."
+    )
 
 
 def test_expired_exception(app, wsgi_env, mocker, caplog):
@@ -116,7 +119,7 @@ def test_alt_abort(app, wsgi_env, mocker):
 
 def test_ccache_not_found(app, wsgi_env, caplog, mocker):
     wsgi_env["KRB5CCNAME"] = "FILE:/tmp/does-not-exist"
-    #caplog.set_level(logging.INFO)
+    # caplog.set_level(logging.INFO)
     client = app.test_client()
     response = client.get("/someplace", environ_base=wsgi_env)
     assert response.status_code == 302

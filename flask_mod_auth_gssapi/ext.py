@@ -73,5 +73,7 @@ class FlaskModAuthGSSAPI:
                 401, "Re-authentication is necessary, please try your request again."
             )
         response = redirect(request.url)
-        response.headers[current_app.config["MOD_AUTH_GSSAPI_SESSION_HEADER"]] = "MagBearerToken="
+        response.headers[current_app.config["MOD_AUTH_GSSAPI_SESSION_HEADER"]] = (
+            "MagBearerToken="
+        )
         return response
