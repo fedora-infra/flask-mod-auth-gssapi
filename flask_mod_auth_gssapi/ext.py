@@ -1,10 +1,7 @@
-import logging
 import os
 
 import gssapi
 from flask import abort, current_app, g, make_response, request
-
-_log = logging.getLogger(__name__)
 
 
 class FlaskModAuthGSSAPI:
@@ -40,7 +37,9 @@ class FlaskModAuthGSSAPI:
 
         ccache_type, _sep, ccache_location = ccache.partition(":")
         if ccache_type == "FILE" and not os.path.exists(ccache_location):
-            _log.warning("Delegated credentials not found: %r", ccache_location)
+            current_app.logger.warning(
+                "Delegated credentials not found: %r", ccache_location
+            )
             return self._authenticate()
 
         gss_name = gssapi.Name(principal, gssapi.NameType.kerberos_principal)
@@ -58,12 +57,12 @@ class FlaskModAuthGSSAPI:
         except gssapi.exceptions.ExpiredCredentialsError:
             lifetime = 0
         if lifetime <= 0:
-            _log.info("Credential lifetime has expired.")
+            current_app.logger.info("Credential lifetime has expired.")
             if ccache_type == "FILE":
                 try:
                     os.remove(ccache_location)
                 except OSError as e:
-                    _log.warning(
+                    current_app.logger.warning(
                         "Could not remove expired credential at %s: %s",
                         ccache_location,
                         e,
@@ -77,7 +76,9 @@ class FlaskModAuthGSSAPI:
 
     def _authenticate(self):
         """Unset mod_auth_gssapi's session cookie and restart GSSAPI authentication"""
-        _log.debug("Clearing the session and asking for re-authentication.")
+        current_app.logger.debug(
+            "Clearing the session and asking for re-authentication."
+        )
         response = make_response("Re-authentication is necessary.", 401)
         response.headers["WWW-Authenticate"] = "Negotiate"
         session_header = current_app.config["MOD_AUTH_GSSAPI_SESSION_HEADER"]
