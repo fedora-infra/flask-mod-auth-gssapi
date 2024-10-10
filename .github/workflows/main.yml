@@ -1,16 +1,19 @@
+name: Tests & Build
+
 on:
   push:
     branches:
       - stable
       - develop
+    tags:
+      - v*
   pull_request:
     branches:
       - stable
       - develop
 
-name: Tests & Build
-
 jobs:
+
   tests-misc:
     name: Misc tests
     runs-on: ubuntu-latest
