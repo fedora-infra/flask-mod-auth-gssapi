@@ -1,6 +1,5 @@
 import logging
 import os
-import stat
 
 import pytest
 from flask import Flask, g
@@ -79,20 +78,21 @@ def test_expired_exception(app, wsgi_env, mocker, caplog):
     assert caplog.messages == ["Credential lifetime has expired."]
 
 
-def test_expired_cant_remove(app, wsgi_env, caplog, expired_credential, tmp_path):
+def test_expired_cant_remove(
+    app, wsgi_env, caplog, expired_credential, tmp_path, mocker
+):
     ccaches_dir = tmp_path.joinpath("ccaches")
     os.makedirs(ccaches_dir)
     ccache_path = ccaches_dir.joinpath("ccache")
     open(ccache_path, "w").close()  # Create the file
-    os.chmod(ccaches_dir, stat.S_IRUSR | stat.S_IXUSR)  # Prevent writing to this dir
     wsgi_env["KRB5CCNAME"] = f"FILE:{ccache_path.as_posix()}"
     client = app.test_client()
+    mocker.patch("os.remove", side_effect=OSError("Dummy error"))
     response = client.get("/someplace", environ_base=wsgi_env)
     assert response.status_code == 401
     assert response.headers["www-authenticate"] == "Negotiate"
     assert caplog.messages == [
-        f"Could not remove expired credential at {ccache_path.as_posix()}: "
-        f"[Errno 13] Permission denied: '{ccache_path.as_posix()}'"
+        f"Could not remove expired credential at {ccache_path.as_posix()}: Dummy error"
     ]
 
 
