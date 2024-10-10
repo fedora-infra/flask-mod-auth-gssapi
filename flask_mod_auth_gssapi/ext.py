@@ -2,7 +2,7 @@ import logging
 import os
 
 import gssapi
-from flask import abort, current_app, g, redirect, request
+from flask import abort, current_app, g, make_response, request
 
 _log = logging.getLogger(__name__)
 
@@ -41,7 +41,7 @@ class FlaskModAuthGSSAPI:
         ccache_type, _sep, ccache_location = ccache.partition(":")
         if ccache_type == "FILE" and not os.path.exists(ccache_location):
             _log.warning("Delegated credentials not found: %r", ccache_location)
-            return self._clear_session()
+            return self._authenticate()
 
         gss_name = gssapi.Name(principal, gssapi.NameType.kerberos_principal)
         try:
@@ -59,21 +59,27 @@ class FlaskModAuthGSSAPI:
             lifetime = 0
         if lifetime <= 0:
             _log.info("Credential lifetime has expired.")
-            return self._clear_session()
+            if ccache_type == "FILE":
+                try:
+                    os.remove(ccache_location)
+                except OSError as e:
+                    _log.warning(
+                        "Could not remove expired credential at %s: %s",
+                        ccache_location,
+                        e,
+                    )
+            return self._authenticate()
 
         g.gss_name = gss_name
         g.gss_creds = creds
         g.principal = gss_name.display_as(gssapi.NameType.kerberos_principal)
         g.username = g.principal.split("@")[0]
 
-    def _clear_session(self):
-        """Unset mod_auth_gssapi's session cookie and redirect to the same URL"""
-        if request.method in ("POST", "PUT", "DELETE"):
-            self.abort(
-                401, "Re-authentication is necessary, please try your request again."
-            )
-        response = redirect(request.url)
-        response.headers[current_app.config["MOD_AUTH_GSSAPI_SESSION_HEADER"]] = (
-            "MagBearerToken="
-        )
+    def _authenticate(self):
+        """Unset mod_auth_gssapi's session cookie and restart GSSAPI authentication"""
+        _log.debug("Clearing the session and asking for re-authentication.")
+        response = make_response("Re-authentication is necessary.", 401)
+        response.headers["WWW-Authenticate"] = "Negotiate"
+        session_header = current_app.config["MOD_AUTH_GSSAPI_SESSION_HEADER"]
+        response.headers[session_header] = "MagBearerToken="
         return response

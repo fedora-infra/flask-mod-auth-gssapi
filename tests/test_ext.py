@@ -1,10 +1,11 @@
 import logging
-from types import SimpleNamespace
+import os
+import stat
 
 import pytest
 from flask import Flask, g
 from gssapi.raw.exceptions import ExpiredCredentialsError
-from werkzeug.exceptions import Forbidden, InternalServerError, Unauthorized
+from werkzeug.exceptions import Forbidden, InternalServerError
 
 from flask_mod_auth_gssapi import FlaskModAuthGSSAPI
 
@@ -45,29 +46,17 @@ def test_no_cache(app, wsgi_env):
             assert g.username is None
 
 
-def test_expired(app, wsgi_env, caplog, mocker):
-    creds_factory = mocker.patch("gssapi.Credentials")
-    creds_factory.return_value = SimpleNamespace(lifetime=0)
+def test_expired(app, wsgi_env, caplog, expired_credential, tmp_path):
+    ccache_path = tmp_path.joinpath("ccache")
+    open(ccache_path, "w").close()  # Create the file
+    wsgi_env["KRB5CCNAME"] = f"FILE:{ccache_path.as_posix()}"
     caplog.set_level(logging.INFO)
     client = app.test_client()
     response = client.get("/someplace", environ_base=wsgi_env)
-    assert response.status_code == 302
-    assert response.headers["location"] == "http://localhost/someplace"
+    assert response.status_code == 401
+    assert response.headers["www-authenticate"] == "Negotiate"
     assert caplog.messages == ["Credential lifetime has expired."]
-
-
-def test_expired_unsafe_method(app, wsgi_env, mocker):
-    creds_factory = mocker.patch("gssapi.Credentials")
-    creds_factory.return_value = SimpleNamespace(lifetime=0)
-    with app.test_request_context("/someplace", method="POST", environ_base=wsgi_env):
-        with pytest.raises(Unauthorized) as excinfo:
-            app.preprocess_request()
-            assert g.principal is None
-            assert g.username is None
-    assert (
-        excinfo.value.description
-        == "Re-authentication is necessary, please try your request again."
-    )
+    assert not os.path.exists(ccache_path)
 
 
 def test_expired_exception(app, wsgi_env, mocker, caplog):
@@ -85,14 +74,29 @@ def test_expired_exception(app, wsgi_env, mocker, caplog):
         response = client.get("/someplace", environ_base=wsgi_env)
     except ExpiredCredentialsError:
         pytest.fail("Did not catch ExpiredCredentialsError on cred.lifetime")
-    assert response.status_code == 302
-    assert response.headers["location"] == "http://localhost/someplace"
+    assert response.status_code == 401
+    assert response.headers["www-authenticate"] == "Negotiate"
     assert caplog.messages == ["Credential lifetime has expired."]
 
 
-def test_nominal(app, wsgi_env, mocker):
-    creds_factory = mocker.patch("gssapi.Credentials")
-    creds_factory.return_value = SimpleNamespace(lifetime=10)
+def test_expired_cant_remove(app, wsgi_env, caplog, expired_credential, tmp_path):
+    ccaches_dir = tmp_path.joinpath("ccaches")
+    os.makedirs(ccaches_dir)
+    ccache_path = ccaches_dir.joinpath("ccache")
+    open(ccache_path, "w").close()  # Create the file
+    os.chmod(ccaches_dir, stat.S_IRUSR | stat.S_IXUSR)  # Prevent writing to this dir
+    wsgi_env["KRB5CCNAME"] = f"FILE:{ccache_path.as_posix()}"
+    client = app.test_client()
+    response = client.get("/someplace", environ_base=wsgi_env)
+    assert response.status_code == 401
+    assert response.headers["www-authenticate"] == "Negotiate"
+    assert caplog.messages == [
+        f"Could not remove expired credential at {ccache_path.as_posix()}: "
+        f"[Errno 13] Permission denied: '{ccache_path.as_posix()}'"
+    ]
+
+
+def test_nominal(app, wsgi_env, credential):
     with app.test_request_context("/", environ_base=wsgi_env):
         app.preprocess_request()
         assert g.principal == "dummy@EXAMPLE.TEST"
@@ -122,6 +126,6 @@ def test_ccache_not_found(app, wsgi_env, caplog, mocker):
     # caplog.set_level(logging.INFO)
     client = app.test_client()
     response = client.get("/someplace", environ_base=wsgi_env)
-    assert response.status_code == 302
-    assert response.headers["location"] == "http://localhost/someplace"
+    assert response.status_code == 401
+    assert response.headers["www-authenticate"] == "Negotiate"
     assert caplog.messages == ["Delegated credentials not found: '/tmp/does-not-exist'"]
