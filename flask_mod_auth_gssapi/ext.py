@@ -1,7 +1,8 @@
 import os
 
 import gssapi
-from flask import abort, current_app, g, make_response, request
+from flask import abort, current_app, g, request
+from werkzeug.exceptions import Unauthorized
 
 
 class FlaskModAuthGSSAPI:
@@ -40,7 +41,7 @@ class FlaskModAuthGSSAPI:
             current_app.logger.warning(
                 "Delegated credentials not found: %r", ccache_location
             )
-            return self._authenticate()
+            self._authenticate()
 
         gss_name = gssapi.Name(principal, gssapi.NameType.kerberos_principal)
         try:
@@ -67,7 +68,7 @@ class FlaskModAuthGSSAPI:
                         ccache_location,
                         e,
                     )
-            return self._authenticate()
+            self._authenticate()
 
         g.gss_name = gss_name
         g.gss_creds = creds
@@ -79,8 +80,9 @@ class FlaskModAuthGSSAPI:
         current_app.logger.debug(
             "Clearing the session and asking for re-authentication."
         )
-        response = make_response("Re-authentication is necessary.", 401)
-        response.headers["WWW-Authenticate"] = "Negotiate"
+        exc = Unauthorized("Re-authentication is necessary.")
+        exc.response = exc.get_response()
+        exc.response.headers["WWW-Authenticate"] = "Negotiate"
         session_header = current_app.config["MOD_AUTH_GSSAPI_SESSION_HEADER"]
-        response.headers[session_header] = "MagBearerToken="
-        return response
+        exc.response.headers[session_header] = "MagBearerToken="
+        raise exc
