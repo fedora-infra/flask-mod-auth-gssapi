@@ -1,6 +1,23 @@
 queue_rules:
   - name: default
-    conditions:
+    queue_conditions:
+      - label!=WIP
+      - approved-reviews-by=@fedora-infra/authdev
+      - "#approved-reviews-by>=1"
+      - status-success=DCO
+      - status-success=Misc tests (lint)
+      - status-success=Misc tests (format)
+      - status-success=Unit tests (py38-flask1)
+      - status-success=Unit tests (py39-flask1)
+      - status-success=Unit tests (py310-flask1)
+      - status-success=Unit tests (py311-flask1)
+      - status-success=Unit tests (py312-flask1)
+      - status-success=Unit tests (py38-flask2)
+      - status-success=Unit tests (py39-flask2)
+      - status-success=Unit tests (py310-flask2)
+      - status-success=Unit tests (py311-flask2)
+      - status-success=Unit tests (py312-flask2)
+    merge_conditions:
       # Conditions to get out of the queue (= merged)
       - status-success=Misc tests (lint)
       - status-success=Misc tests (format)
@@ -14,28 +31,11 @@ queue_rules:
       - status-success=Unit tests (py310-flask2)
       - status-success=Unit tests (py311-flask2)
       - status-success=Unit tests (py312-flask2)
+    merge_method: rebase
 
 pull_request_rules:
 
-  - name: Merge on approval
+  - name: refactored queue action rule
+    conditions: []
     actions:
       queue:
-        name: default
-        method: rebase
-    conditions:
-    - label!=WIP
-    - approved-reviews-by=@fedora-infra/authdev
-    - "#approved-reviews-by>=1"
-    - status-success=DCO
-    - status-success=Misc tests (lint)
-    - status-success=Misc tests (format)
-    - status-success=Unit tests (py38-flask1)
-    - status-success=Unit tests (py39-flask1)
-    - status-success=Unit tests (py310-flask1)
-    - status-success=Unit tests (py311-flask1)
-    - status-success=Unit tests (py312-flask1)
-    - status-success=Unit tests (py38-flask2)
-    - status-success=Unit tests (py39-flask2)
-    - status-success=Unit tests (py310-flask2)
-    - status-success=Unit tests (py311-flask2)
-    - status-success=Unit tests (py312-flask2)
