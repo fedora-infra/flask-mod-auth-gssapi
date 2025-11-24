@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     container: fedorapython/fedora-python-tox:latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Install dependencies
         run: |
           dnf install -y krb5-devel openldap-devel
@@ -39,7 +39,7 @@ jobs:
     runs-on: ubuntu-latest
     container: fedorapython/fedora-python-tox:latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Install dependencies
         run: |
           dnf install -y krb5-devel openldap-devel
@@ -69,7 +69,7 @@ jobs:
       - tests-unit
       - tests-misc
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Set up Python
         uses: actions/setup-python@v6
         with:
