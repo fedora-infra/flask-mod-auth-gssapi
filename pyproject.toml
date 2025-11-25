@@ -32,11 +32,11 @@ classifiers = [
 ]
 
 [tool.poetry.dependencies]
-python = "^3.8.0"
+python = "^3.10"
 flask = "^2.0.0 || ^3.0.0"
 gssapi = "^1.6.2"
 
-[tool.poetry.dev-dependencies]
+[tool.poetry.group.dev.dependencies]
 pytest = "*"
 pytest-mock = "*"
 pytest-cov = "*"
@@ -46,7 +46,6 @@ ruff = "*"
 
 [tool.ruff]
 line-length = 100
-target-version = "py38"
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "UP", "S", "B", "RUF"]
